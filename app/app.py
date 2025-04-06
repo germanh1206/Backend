@@ -7,10 +7,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://front-end-a1qc.onrender.com",
-        "https://front-end-service-requests.onrender.com"  # Agrega aquí el otro dominio
-    ],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
