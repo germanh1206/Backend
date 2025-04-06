@@ -7,10 +7,13 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Permitir solo este dominio
+    allow_origins=[
+        "https://front-end-a1qc.onrender.com",
+        "https://front-end-service-requests.onrender.com"  # Agrega aquí el otro dominio
+    ],
     allow_credentials=True,
-    allow_methods=["*"],  # Permitir todos los métodos (GET, POST, etc.)
-    allow_headers=["*"],  # Permitir todos los encabezados
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 @app.get("/patient/{patient_id}", response_model=dict)
