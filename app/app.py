@@ -13,7 +13,7 @@ app.add_middleware(
     allow_headers=["*"],  # Permitir todos los encabezados
 )
 
-@app.get("/patients/{patient_id}", response_model=dict)
+@app.get("/patient/{patient_id}", response_model=dict)
 async def get_patient_by_id(patient_id: str):
     status,patient = GetPatientById(patient_id)
     if status=='success':
@@ -23,7 +23,7 @@ async def get_patient_by_id(patient_id: str):
     else:
         raise HTTPException(status_code=500, detail=f"Internal error. {status}")
 
-@app.get("/patients", response_model=dict)
+@app.get("/patient", response_model=dict)
 async def get_patient_by_identifier(system: str, value: str):
     print("received", system, value)
     status, patient = GetPatientByIdentifier(system, value)
