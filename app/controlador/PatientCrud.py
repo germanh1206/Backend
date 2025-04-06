@@ -3,7 +3,10 @@ from bson import ObjectId
 from fhir.resources.patient import Patient
 import json
 
-collection = connect_to_mongodb("patientsRIS", "patients")
+# Conexión a la base de datos para la colección de pacientes
+collection = connect_to_mongodb("SamplePatientService", "patients")
+# Conexión a la base de datos para la colección de solicitudes de servicio
+service_requests_collection = connect_to_mongodb("SamplePatientService", "service_requests")
 
 def GetPatientById(patient_id: str):
     try:
@@ -13,7 +16,23 @@ def GetPatientById(patient_id: str):
             return "success", patient
         return "notFound", None
     except Exception as e:
-        return f"notFound", None
+        print("Error in GetPatientById:", e)
+        return "notFound", None
+
+def WritePatient(patient_dict: dict):
+    try:
+        pat = Patient.model_validate(patient_dict)
+    except Exception as e:
+        print("Error validating patient:", e)
+        return f"errorValidating: {str(e)}", None
+    # Es recomendable insertar el objeto validado en lugar del dict original
+    validated_patient_json = pat.model_dump()
+    result = collection.insert_one(validated_patient_json)
+    if result:
+        inserted_id = str(result.inserted_id)
+        return "success", inserted_id
+    else:
+        return "errorInserting", None
 
 def GetPatientByIdentifier(patientSystem, patientValue):
     try:
@@ -33,16 +52,28 @@ def GetPatientByIdentifier(patientSystem, patientValue):
         print("Error in GetPatientByIdentifier:", e)
         return "notFound", None
 
-
-def WritePatient(patient_dict: dict):
+def WriteServiceRequest(service_request_data: dict):
     try:
-        pat = Patient.model_validate(patient_dict)
+        # Inserta la solicitud en la colección configurada para solicitudes de servicio
+        result = service_requests_collection.insert_one(service_request_data)
+        return "success", str(result.inserted_id)
     except Exception as e:
-        return f"errorValidating: {str(e)}",None
-    validated_patient_json = pat.model_dump()
-    result = collection.insert_one(patient_dict)
-    if result:
-        inserted_id = str(result.inserted_id)
-        return "success",inserted_id
+        print("Error in WriteServiceRequest:", e)
+        return "error", None
+
+def read_service_request(service_request_id: str) -> dict:
+    """
+    Recupera una solicitud de servicio a partir de su ID.
+    """
+    try:
+        query = {"_id": ObjectId(service_request_id)}
+    except Exception as e:
+        print("Error al convertir el ID:", e)
+        return None
+
+    service_request = service_requests_collection.find_one(query)
+    if service_request:
+        service_request["_id"] = str(service_request["_id"])
+        return service_request
     else:
-        return "errorInserting", None
+        return None
